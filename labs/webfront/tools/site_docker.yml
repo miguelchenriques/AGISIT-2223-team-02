@@ -1,0 +1,108 @@
+---
+
+# common
+- hosts: targets
+  remote_user: vagrant
+  become: yes
+  become_method: sudo
+  gather_facts: true
+
+  tasks:
+
+  - name: install git
+    apt:
+      name: git
+      state: present
+      update_cache: yes
+    register: apt_status
+    until: apt_status is success
+    delay: 6
+    retries: 10
+
+# web
+- hosts: web
+  remote_user: vagrant
+  become: yes
+  become_method: sudo
+  gather_facts: true
+
+  tasks:
+
+  - name: install nginx
+    apt:
+      name: nginx
+      state: present
+    register: apt_status
+    until: apt_status is success
+    delay: 6
+    retries: 10
+
+  - name: write our nginx.conf
+    template:
+      src: /home/vagrant/tools/frontend_templates/nginx.conf.j2
+      dest: /etc/nginx/nginx.conf
+    notify: restart nginx
+
+  - name: write our /etc/nginx/sites-available/default
+    template:
+      src: /home/vagrant/tools/frontend_templates/default-site.j2
+      dest: /etc/nginx/sites-available/default
+    notify: restart nginx
+
+  - name: deploy website content
+    template:
+      src: /home/vagrant/tools/frontend_templates/index.html.j2
+      dest: /usr/share/nginx/html/index.html
+
+  handlers:
+
+  - name: restart nginx
+    service:
+      name: nginx
+      state: restarted
+
+# balancer
+- hosts: lb
+  remote_user: vagrant
+  become: yes
+  become_method: sudo
+  gather_facts: true
+
+  tasks:
+
+  - name: install haproxy and socat
+    apt:
+      pkg: ['haproxy', 'socat']
+      state: latest
+    register: apt_status
+    until: apt_status is success
+    delay: 6
+    retries: 10
+
+  - name: enable haproxy
+    lineinfile:
+      path: /etc/default/haproxy
+      regexp: "^ENABLED.+$"
+      line: "ENABLED=1"
+      state: present
+
+  - name: deploy haproxy config
+    template:
+      src: /home/vagrant/tools/frontend_templates/haproxy.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+      mode: 0644
+      validate: haproxy -f %s -c -q
+    notify: restart haproxy
+
+  - name: Ensure HAProxy is started and enabled on boot.
+    service:
+      name: haproxy
+      state: started
+      enabled: yes
+
+  handlers:
+
+  - name: restart haproxy
+    service:
+      name: haproxy
+      state: restarted

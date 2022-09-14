@@ -1,0 +1,144 @@
+---
+# file: vmcloud-site-servers-setup-all.yml
+# configures the server instances
+# This Playbook has Three Plays: one for critical configurations in all servers
+# A second one for installing software in web servers
+# a third one to install software in the Load Balancer server
+
+# This First Play Sets up critical configuration on servers
+- hosts: targets
+  # as the systems are not yet "known" by Ansible Facts cannot be gathered yet
+  gather_facts: no
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+
+  pre_tasks:
+    # To operate remotely in critical files without direct user input
+    - name: Remove require tty - alt
+      lineinfile:
+        regexp: "requiretty"
+        dest: /etc/sudoers.d/os_defaults
+        state: absent
+    # Giving permissions in sudoers for system critical files (see https://docs.ansible.com/ansible/latest/modules/lineinfile_module.html)
+    - name: Validate the sudoers file before saving  not to require password
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%ADMIN ALL='
+        line: '%ADMIN ALL=(ALL) NOPASSWD: ALL'
+        validate: /usr/sbin/visudo -cf %s
+    # Install the SSH key on servers
+    - name: install ssh key
+      authorized_key:
+        user: ubuntu
+        key: "{{ lookup('file', '/home/vagrant/.ssh/id_rsa.pub') }}"
+        state: present
+
+# This Second Play installs the required software in web servers
+# tasks names are self explanatory
+- hosts: web
+  gather_facts: True
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Add NGINX Repository
+      apt_repository:
+        repo: ppa:nginx/stable
+        state: present
+
+    - name: install nginx
+      apt:
+        pkg: nginx
+        state: present
+      register: conf_nginx
+    - debug:
+        var: conf_nginx
+
+    - name: write our nginx.conf
+      template:
+        src: /home/vagrant/labs/vmcloud/templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+      notify: restart nginx
+
+    - name: write our /etc/nginx/sites-available/default
+      template:
+        src: /home/vagrant/labs/vmcloud/templates/default-site.j2
+        dest: /etc/nginx/sites-available/default
+      notify: restart nginx
+
+    - name: deploy website content
+      template:
+        src: /home/vagrant/labs/vmcloud/templates/index.html.j2
+        dest: /usr/share/nginx/html/index.html
+
+
+  # The handler is common to the nginx installation steps
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+# This Third Play install the required software in the Load Balancer
+- hosts: loadbal
+  gather_facts: true
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+
+  tasks:
+    # as there is no internal DNS service, we need to populate theb /etc/hosts
+    - name: update /etc/hosts file for name resolution of self
+      lineinfile:
+        dest: /etc/hosts
+        regexp: '.*{{ item }}$'
+        line: "127.0.0.1 {{item}}"
+        state: present
+      with_items: balancer
+    # as there is no internal DNS service, we need to populate the /etc/hosts
+    - name: update /etc/hosts file for name resolution
+      lineinfile:
+        dest: /etc/hosts
+        regexp: '.*{{ item }}$'
+        line: "{{ hostvars[item]['ansible_default_ipv4']['address'] }} {{item}}"
+        state: present
+      when: hostvars[item]['ansible_default_ipv4']['address'] is defined
+      with_items: '{{groups.web}}'
+
+    - name: install haproxy and socat
+      apt:
+        pkg: ['haproxy', 'socat']
+        state: latest
+
+    - name: enable haproxy
+      lineinfile:
+        path: /etc/default/haproxy
+        regexp: "^ENABLED.+$"
+        line: "ENABLED=1"
+        state: present
+
+
+    - name: deploy haproxy config
+      template:
+        src: /home/vagrant/labs/vmcloud/templates/haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+        mode: 0644
+        validate: haproxy -f %s -c -q
+      notify: restart haproxy
+
+    - name: Ensure HAProxy is started and enabled on boot.
+      service:
+        name: haproxy
+        state: started
+        enabled: yes
+
+# The handler is common to the nginx installation steps
+  handlers:
+
+  - name: restart haproxy
+    service:
+      name: haproxy
+      state: restarted
