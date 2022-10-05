@@ -2,6 +2,7 @@
 
 Bernardo Varzea
 Filipe Barroso
+Miguel Henriques
 
 Each folder contains the components for setting up an Infrastructure on a certain Cloud.
 
