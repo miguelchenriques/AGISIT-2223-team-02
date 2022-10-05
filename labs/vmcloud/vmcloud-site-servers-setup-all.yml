@@ -28,17 +28,11 @@
         regexp: '^%ADMIN ALL='
         line: '%ADMIN ALL=(ALL) NOPASSWD: ALL'
         validate: /usr/sbin/visudo -cf %s
-    # Install the SSH key on servers
-    - name: install ssh key
-      authorized_key:
-        user: ubuntu
-        key: "{{ lookup('file', '/home/vagrant/.ssh/id_rsa.pub') }}"
-        state: present
 
 # This Second Play installs the required software in web servers
 # tasks names are self explanatory
 - hosts: web
-  gather_facts: True
+  gather_facts: true
   remote_user: ubuntu
   become: yes
   become_method: sudo

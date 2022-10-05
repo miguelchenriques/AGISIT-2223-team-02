@@ -53,7 +53,7 @@ backend habackend
   mode http
   balance roundrobin
   {% for host in groups['web'] %}
-    server {{ host }} {{ hostvars[host]['ansible_facts']['ansible_default_ipv4.interface']['ipv4']['address'] }}:80 check
+    server {{ host }} {{ hostvars[host]['ansible_host'] }}:80 check
   {% endfor %}
 
 #---------------------------------------------------------------------

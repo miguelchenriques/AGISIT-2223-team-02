@@ -16,7 +16,7 @@ http://jsfiddle.net/6PaXB/
         <br />
         <p>Automation with Terraform and Ansible</p>
         <p>{{ ansible_hostname }}</p>
-        <p>({{ hostvars[ansible_hostname][ansible_facts][ansible_default_ipv4.interface].ipv4.address }})</p>
+        <p>({{ hostvars[ansible_hostname]['ansible_host'] }})</p>
         <pre>
   ------------------------
                    \   ^__^
