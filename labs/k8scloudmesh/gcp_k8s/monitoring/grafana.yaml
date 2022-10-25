@@ -1,3 +1,4 @@
+# Based on https://github.com/istio/istio/blob/master/samples/addons/grafana.yaml
 ---
 # Source: grafana/templates/serviceaccount.yaml
 apiVersion: v1
