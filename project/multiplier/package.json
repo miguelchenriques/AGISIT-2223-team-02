@@ -1,0 +1,16 @@
+{
+  "name": "multiplier",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "http": "0.0.1-security",
+    "http-errors": "^2.0.0"
+  }
+}
