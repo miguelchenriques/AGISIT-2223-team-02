@@ -1,0 +1,12 @@
+---
+- hosts: targets
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  tasks:
+
+  - name: remove ntp
+    apt:
+      name: ntp
+      state: absent
