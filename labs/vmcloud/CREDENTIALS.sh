@@ -1,8 +1,0 @@
-export OS_AUTH_URL=https://stackcontroller.al.dsi.tecnico.ulisboa.pt:5000/v3
-export OS_IDENTITY_API_VERSION=3
-export OS_USER_DOMAIN_NAME="tecnico-apikeys"
-export OS_REGION_NAME="RegionT"
-export OS_PROJECT_NAME="gp-AGISIT7-AGISIT-Teams-XXXXXXXX"
-export OS_PROJECT_ID=XXXXXXXXXXXXXXXXX
-export OS_USERNAME=XXXXXXXXXXXXXXXXXX
-export OS_PASSWORD=XXXXXXXXXXXXXXXXXX
