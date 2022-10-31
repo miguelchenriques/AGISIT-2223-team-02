@@ -24,6 +24,10 @@ variable "GCP_ZONE" {
     default = "europe-west2-b"
 }
 
+variable "OPERATIONS_ZONE" {
+    default = "europe-west3-b"
+}
+
 # Minimum required
 variable "DISK_SIZE" {
     default = "15"

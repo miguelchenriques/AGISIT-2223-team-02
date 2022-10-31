@@ -16,7 +16,7 @@ resource "google_compute_instance" "frontend" {
         initialize_params {
           # image list can be found at:
           # https://cloud.google.com/compute/docs/images
-          image = "ubuntu-2004-bionic-XXXXXXXX"
+          image = "ubuntu-2004-focal-v20221018"
         }
     }
 
@@ -44,7 +44,7 @@ resource "google_compute_instance" "balancer" {
         initialize_params {
           # image list can be found at:
           # https://cloud.google.com/compute/docs/images
-          image = "ubuntu-2004-bionic-XXXXXXXX"
+          image = "ubuntu-2004-focal-v20221018"
         }
     }
 
@@ -67,13 +67,13 @@ resource "google_compute_instance" "operations" {
     count = 6
     name = "operations${count.index+1}"
     machine_type = var.GCP_MACHINE_TYPE
-    zone = var.GCP_ZONE
+    zone = var.OPERATIONS_ZONE
 
     boot_disk {
         initialize_params {
           # image list can be found at:
           # https://cloud.google.com/compute/docs/images
-          image = "ubuntu-2004-bionic-XXXXXXXX"
+          image = "ubuntu-2004-focal-v20221018"
         }
     }
 
