@@ -10,7 +10,7 @@ resource "google_compute_firewall" "frontend_rules" {
 
   allow {
     protocol = "tcp"
-    ports = ["80", "443"]
+    ports = ["3000"]
   }
 
   source_ranges = ["0.0.0.0/0"]
@@ -54,4 +54,17 @@ resource "google_compute_firewall" "metrics_rules" {
 
   source_ranges = ["0.0.0.0/0"]
   target_tags = ["balancer", "operations", "frontend"]
+}
+
+resource "google_compute_firewall" "monitor_rules" {
+  name  = "monitor"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports = ["9090", "3000"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = ["monitor"]
 }
