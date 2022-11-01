@@ -1,0 +1,78 @@
+---
+# file: ansible-gcp-servers-setup-all.yml
+# configures the server instances
+# This Playbook has Three Plays: one for critical configurations in all servers
+# A second one for installing software in web servers
+# a third one to install software in the Load Balancer server
+
+# This First Play Sets up critical configuration on servers
+- hosts: targets
+  # as the systems are not yet "known" by Ansible Facts cannot be gathered yet
+  gather_facts: no
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+
+  pre_tasks:
+    # To operate remotely in critical files without direct user input
+    - name: Remove require tty - alt
+      lineinfile:
+        regexp: "requiretty"
+        dest: /etc/sudoers.d/os_defaults
+        state: absent
+    # Giving permissions in sudoers for system critical files (see https://docs.ansible.com/ansible/latest/modules/lineinfile_module.html)
+    - name: Validate the sudoers file before saving  not to require password
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%ADMIN ALL='
+        line: '%ADMIN ALL=(ALL) NOPASSWD: ALL'
+        validate: /usr/sbin/visudo -cf %s
+    # Install the SSH key on servers
+    - name: install ssh key
+      authorized_key:
+        user: ubuntu
+        key: "{{ lookup('file', '/home/vagrant/.ssh/id_rsa.pub') }}"
+        state: present
+
+
+- hosts: adder
+  gather_facts: true
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+  
+  tasks:
+    - name: Create src folder
+      file:
+        path: /home/ubuntu/src
+        state: directory
+        mode: 0755
+
+    - name: Copy project code
+      copy: 
+        src: /home/vagrant/project/adder/
+        dest: /home/ubuntu/src/
+
+    - name: Copy service unit file
+      copy: 
+        src: /home/vagrant/project/adder/adder.service
+        dest: /etc/systemd/system/adder.service
+
+    - name: Install pip3
+      apt:
+        name: python3-pip
+        update_cache: yes
+
+    - name: Install dependencies
+      ansible.builtin.pip: 
+        chdir: /home/ubuntu/src
+        requirements: requirements.txt
+
+    - name: Run service
+      systemd:
+        name: adder
+        daemon-reload: yes
+        enabled: yes
+        state: started
+        masked: no
