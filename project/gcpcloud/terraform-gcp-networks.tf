@@ -36,9 +36,22 @@ resource "google_compute_firewall" "balancer_rules" {
 
   allow {
     protocol = "tcp"
-    ports = ["80", "443", "3001"]
+    ports = ["80", "443"]
   }
 
   source_ranges = ["0.0.0.0/0"]
   target_tags = ["balancer"]
+}
+
+resource "google_compute_firewall" "metrics_rules" {
+  name  = "metrics"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports = ["9100"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = ["balancer", "operations", "frontend"]
 }
