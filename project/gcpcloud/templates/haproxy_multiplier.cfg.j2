@@ -52,8 +52,8 @@ frontend hafrontend
 backend multiplier
   mode http
   balance roundrobin
-  {% for host in groups['multiplier'] %}
-    server {{ host }} {{ hostvars[host]['ansible_default_ipv4']['address'] }}:80 check
+  {% for host in groups['mult'] %}
+    server {{ host }} {{ hostvars[host]['ansible_default_ipv4']['address'] }}:3000 check
   {% endfor %}
 
 #---------------------------------------------------------------------

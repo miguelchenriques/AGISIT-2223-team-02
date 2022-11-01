@@ -36,8 +36,7 @@ resource "google_compute_instance" "frontend" {
 
 ###########  Load Balancer   #############
 resource "google_compute_instance" "balancer" {
-    count = 2
-    # count = 3
+    count = 3
     name = "balancer${count.index+1}"
     machine_type = var.GCP_MACHINE_TYPE
     zone = var.GCP_ZONE

@@ -5,7 +5,7 @@
 # For that, un-comment the following line before running instances configuration
 balancer1    ansible_host=35.246.79.228 ansible_user=ubuntu ansible_connection=ssh
 balancer2    ansible_host=34.142.105.79 ansible_user=ubuntu ansible_connection=ssh
-# balancer3    ansible_host=35.246.77.158 ansible_user=ubuntu ansible_connection=ssh
+balancer3    ansible_host=35.246.77.158 ansible_user=ubuntu ansible_connection=ssh
 frontend1     ansible_host=35.197.246.81 ansible_user=ubuntu ansible_connection=ssh
 # frontend2     ansible_host=35.189.83.122 ansible_user=ubuntu ansible_connection=ssh
 adder1        ansible_host=34.107.72.34 ansible_user=ubuntu ansible_connection=ssh
@@ -42,15 +42,19 @@ multiplier1
 multiplier2
 # multiplier3
 
+[frontend]
+frontend1
+; frontend2
+
 [bal]
 balancer1
 balancer2
-# balancer3
+balancer3
 
 [targets]
 balancer1
 balancer2
-# balancer3
+balancer3
 adder1
 adder2
 # adder3
@@ -59,3 +63,17 @@ multiplier2
 # multiplier3
 frontend1
 # frontend2
+
+[all]
+balancer1
+balancer2
+balancer3
+adder1
+adder2
+# adder3
+multiplier1
+multiplier2
+# multiplier3
+frontend1
+# frontend2
+monitor
