@@ -1,0 +1,102 @@
+
+%{ for index, balancer in balancer_names ~}
+${ balancer } ansible_host=${ balancer_ips[index] } ansible_user=ubuntu ansible_connection=ssh
+%{ endfor ~}
+%{ for index, frontend in frontend_names ~}
+${ frontend } ansible_host=${ frontend_ips[index] } ansible_user=ubuntu ansible_connection=ssh
+%{ endfor ~}
+%{ for index, adder in adder_names ~}
+${ adder } ansible_host=${ adder_ips[index] } ansible_user=ubuntu ansible_connection=ssh
+%{ endfor ~}
+%{ for index, multiplier in multiplier_names ~}
+${ multiplier } ansible_host=${ multiplier_ips[index] } ansible_user=ubuntu ansible_connection=ssh
+%{ endfor ~}
+${ monitor_name }   ansible_host=${ monitor_ip[0] } ansible_user=ubuntu ansible_connection=ssh
+%{ for index, database in database_names ~}
+${ database } ansible_host=${ database_ips[index] } ansible_user=ubuntu ansible_connection=ssh
+%{ endfor ~}
+
+# The local deployment host VM
+[osmgmt]
+localhost           ansible_connection=local
+
+[databases]
+%{ for index, database in database_names ~}
+${ database }
+%{ endfor ~}
+
+[servers]
+%{ for index, frontend in frontend_names ~}
+${ frontend }
+%{ endfor ~}
+%{ for index, adder in adder_names ~}
+${ adder }
+%{ endfor ~}
+%{ for index, multiplier in multiplier_names ~}
+${ multiplier }
+%{ endfor ~}
+
+
+[adder]
+%{ for index, adder in adder_names ~}
+${ adder }
+%{ endfor ~}
+
+[mult]
+%{ for index, multiplier in multiplier_names ~}
+${ multiplier }
+%{ endfor ~}
+
+[frontend]
+%{ for index, frontend in frontend_names ~}
+${ frontend }
+%{ endfor ~}
+
+[bal]
+%{ for index, balancer in balancer_names ~}
+${ balancer }
+%{ endfor ~}
+
+[nodeServices]
+%{ for index, multiplier in multiplier_names ~}
+${ multiplier }
+%{ endfor ~}
+%{ for index, frontend in frontend_names ~}
+${ frontend }
+%{ endfor ~}
+
+[targets]
+%{ for index, balancer in balancer_names ~}
+${ balancer }
+%{ endfor ~}
+%{ for index, frontend in frontend_names ~}
+${ frontend }
+%{ endfor ~}
+%{ for index, adder in adder_names ~}
+${ adder }
+%{ endfor ~}
+%{ for index, multiplier in multiplier_names ~}
+${ multiplier }
+%{ endfor ~}
+%{ for index, database in database_names ~}
+${ database }
+%{ endfor ~}
+
+
+[all]
+%{ for index, balancer in balancer_names ~}
+${ balancer }
+%{ endfor ~}
+%{ for index, frontend in frontend_names ~}
+${ frontend }
+%{ endfor ~}
+%{ for index, adder in adder_names ~}
+${ adder }
+%{ endfor ~}
+%{ for index, multiplier in multiplier_names ~}
+${ multiplier }
+%{ endfor ~}
+${ monitor_name }
+%{ for index, database in database_names ~}
+${ database }
+%{ endfor ~}

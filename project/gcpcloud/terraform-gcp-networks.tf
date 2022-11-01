@@ -53,7 +53,7 @@ resource "google_compute_firewall" "metrics_rules" {
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags = ["balancer", "operations", "frontend"]
+  target_tags = ["balancer", "operations", "frontend", "databases"]
 }
 
 resource "google_compute_firewall" "monitor_rules" {
@@ -67,4 +67,17 @@ resource "google_compute_firewall" "monitor_rules" {
 
   source_ranges = ["0.0.0.0/0"]
   target_tags = ["monitor"]
+}
+
+resource "google_compute_firewall" "databases_rules" {
+  name    = "databases"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports = ["27017"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = ["databases"]
 }
