@@ -1,7 +1,4 @@
 ---
-- hosts: servers
-  gather_facts: yes
-
 - hosts: frontend
   remote_user: ubuntu
   become: yes
