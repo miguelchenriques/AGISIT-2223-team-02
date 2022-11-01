@@ -1,0 +1,14 @@
+---
+- hosts: servers
+  gather_facts: yes
+
+- hosts: frontend
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - template:
+      src: /home/vagrant/project/gcpcloud/templates/microservices_balancers.json.j2
+      dest: /home/ubuntu/
+      mode: 0644
