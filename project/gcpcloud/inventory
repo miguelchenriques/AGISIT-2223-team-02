@@ -49,12 +49,17 @@ frontend1
 [bal]
 balancer1
 balancer2
-balancer3
+; balancer3
+
+[nodeServices]
+multiplier1
+multiplier2
+frontend1
 
 [targets]
 balancer1
 balancer2
-balancer3
+; balancer3
 adder1
 adder2
 # adder3

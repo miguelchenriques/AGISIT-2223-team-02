@@ -1,0 +1,120 @@
+---
+# file: ansible-gcp-servers-setup-all.yml
+# configures the server instances
+# This Playbook has Three Plays: one for critical configurations in all servers
+# A second one for installing software in web servers
+# a third one to install software in the Load Balancer server
+
+- hosts: nodeServices
+  gather_facts: true
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+  # vars:
+  #   NODEJS_VERSION: "16"
+  #   ansible_distribution_release: "focal" 
+  tasks:
+  #   - name: Install the gpg key for nodejs LTS
+  #     apt_key:
+  #       url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+  #       state: present
+
+  #   - name: Install the nodejs LTS repos
+  #     apt_repository:
+  #       repo: "deb https://deb.nodesource.com/node_{{ NODEJS_VERSION }}.x {{ ansible_distribution_release }} main"
+  #       state: present
+  #       update_cache: yes
+
+  #   - name: Install the nodejs
+  #     apt:
+  #       name: nodejs
+  #       state: present
+
+    - name: upgrade
+      apt:
+        upgrade: yes
+
+    - name: Install nodejs 
+      apt:
+        pkg:
+          - nodejs
+
+
+- hosts: mult
+  gather_facts: true
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+  
+  tasks:
+    - name: Create src folder
+      file:
+        path: /home/ubuntu/src
+        state: directory
+        mode: 0755
+
+    - name: Copy project code
+      copy: 
+        src: '{{item}}'
+        dest: /home/ubuntu/src/
+      loop:
+        - /home/vagrant/project/multiplier/bin
+        - /home/vagrant/project/multiplier/routes
+        - /home/vagrant/project/multiplier/app.js
+        - /home/vagrant/project/multiplier/package.json
+
+    - name: install app and dependencies
+      npm:
+        path: /home/ubuntu/src
+
+    - name: Start the application
+      command:
+        chdir: /home/ubuntu/src/
+        cmd: sudo npm start
+      async: 1000
+      poll: 0
+
+    - name: Ensure app is running
+      shell: ps aux | grep node
+      register: app_status
+
+    - debug: msg={{app_status.stdout_lines}}-
+
+- hosts: frontend
+  gather_facts: true
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+  
+  tasks:
+    - name: Create src folder
+      file:
+        path: /home/ubuntu/src
+        state: directory
+        mode: 0755
+
+    - name: Copy project code
+      copy: 
+        src: '{{item}}'
+        dest: /home/ubuntu/src/
+      loop:
+        - /home/vagrant/project/frontend/public
+        - /home/vagrant/project/frontend/src
+        - /home/vagrant/project/frontend/package.json
+
+    - name: install app and dependencies
+      npm:
+        path: /home/ubuntu/src
+
+    - name: Start the application
+      command:
+        chdir: /home/ubuntu/src/
+        cmd: sudo npm start
+      async: 1000
+      poll: 0
+
+    - name: Ensure app is running
+      shell: ps aux | grep node
+      register: app_status
+
+    - debug: msg={{app_status.stdout_lines}}-
