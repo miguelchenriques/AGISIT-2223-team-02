@@ -14,7 +14,7 @@ adder2        ansible_host=34.141.126.234 ansible_user=ubuntu ansible_connection
 multiplier1   ansible_host=34.159.157.73 ansible_user=ubuntu ansible_connection=ssh
 multiplier2   ansible_host=34.89.189.132 ansible_user=ubuntu ansible_connection=ssh
 # multiplier3   ansible_host=34.89.189.132 ansible_user=ubuntu ansible_connection=ssh
-monitor   ansible_host=34.89.242.170 ansible_user=ubuntu ansible_connection=ssh
+monitor   ansible_host=34.141.83.167 ansible_user=ubuntu ansible_connection=ssh
 
 
 # The local deployment host VM
