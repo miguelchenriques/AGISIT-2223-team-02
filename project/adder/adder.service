@@ -9,6 +9,8 @@ LimitNOFILE=4096
 ExecStart=uvicorn adder.main:app --host "0.0.0.0" --port 3000
 Restart=on-failure
 RestartSec=5s
+StandardOutput=append:/var/log/adder.log
+StandardError=append:/var/log/adder.log
 
 [Install]
 WantedBy=multi-user.target

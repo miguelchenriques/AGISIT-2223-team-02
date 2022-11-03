@@ -1,4 +1,7 @@
 ---
+- hosts: databases
+  gather_facts: yes
+
 - hosts: adder
   gather_facts: true
   remote_user: ubuntu
@@ -22,6 +25,12 @@
         src: /home/vagrant/project/adder/adder.service
         dest: /etc/systemd/system/adder.service
 
+    - name: Add database ips file
+      template:
+        src: /home/vagrant/project/gcpcloud/templates/database_ips.j2
+        dest: /home/ubuntu/src/database_ips
+        mode: 0644
+
     - name: Install pip3
       apt:
         name: python3-pip
@@ -31,6 +40,7 @@
       ansible.builtin.pip: 
         chdir: /home/ubuntu/src
         requirements: requirements.txt
+      notify: restart adder
 
     - name: Run service
       systemd:
@@ -39,3 +49,9 @@
         enabled: yes
         state: started
         masked: no
+
+  handlers:
+    - name: restart adder
+      systemd:
+        name: adder
+        state: restarted

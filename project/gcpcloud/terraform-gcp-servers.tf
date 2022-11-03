@@ -166,7 +166,7 @@ resource "google_compute_instance" "database" {
       ssh-keys = "ubuntu:${file("/home/vagrant/.ssh/id_rsa.pub")}"
     }
 
-  tags = ["database"]
+  tags = ["databases"]
 }
 
 resource "local_file" "ansible_inventory" {

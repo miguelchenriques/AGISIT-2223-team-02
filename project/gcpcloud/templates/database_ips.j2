@@ -1,0 +1,3 @@
+{% for host in groups['databases'] %}
+{{ hostvars[host]['ansible_default_ipv4']['address'] }}:27017
+{% endfor %}
