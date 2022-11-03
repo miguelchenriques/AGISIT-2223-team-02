@@ -1,0 +1,12 @@
+{% set inst_config = [] %}
+{% for host in groups['targets'] %}
+    {{ inst_config.append( hostvars[host]['ansible_default_ipv4']['address'] + ':9100') }}
+{% endfor %}
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+- job_name: node
+  static_configs:
+  - targets: {{ inst_config }}
+

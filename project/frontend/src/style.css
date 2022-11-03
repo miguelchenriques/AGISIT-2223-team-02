@@ -19,8 +19,8 @@ html {
 }
 
 .calc-container {
+  height: 20em;
   width: 80%;
-  margin: 5rem auto;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: repeat(6, minmax(0, 1fr));
@@ -113,4 +113,43 @@ ul {
 .link a:hover {
   text-decoration: none;
   color: #f5913e;
+}
+
+.wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10vw;
+}
+
+.list {
+  display: block;
+  height: 15em;
+  line-height: 2em;
+  border: 1px solid #ccc;
+  padding: 0;
+  margin: 0;
+  overflow: scroll;
+  overflow-x: hidden;
+}
+
+.list-wrapper {
+  height: 20em;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.refresh {
+  padding: 10px;
+  border: 0.01px solid hsl(0, 0%, 80%);
+  border-radius: 15px;
+  background-color: #f5913e;
+  outline: none;
+  transition: 0.05s ease-in-out;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
