@@ -14,9 +14,9 @@ const Calculator = () => {
     },
   });
 
-  const handleClick = (event) => {
+  const handleClick = async (event) => {
     const { obj } = state;
-    setState({ obj: calculate(obj, event.target.textContent) });
+    setState({ obj: await calculate(obj, event.target.textContent) });
   };
   const { obj } = state;
   const { total, next, operation } = obj;

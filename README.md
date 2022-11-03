@@ -1,8 +1,8 @@
 ##  This Directory contains the folders and files for the Group Lab and Project works
 
-Bernardo Varzea
-Filipe Barroso
-Miguel Henriques
+Bernardo Varzea 102150
+Filipe Barroso 102152
+Miguel Henriques 102148
 
 Each folder contains the components for setting up an Infrastructure on a certain Cloud.
 

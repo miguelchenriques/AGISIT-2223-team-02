@@ -26,7 +26,7 @@ def add_document(a: int, b: int, operator: str, result: int):
     document = {
         "num1": a,
         "num2": b,
-        "operator": operator,
+        "operation": operator,
         "result": result
     }
     history.insert_one(document)

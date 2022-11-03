@@ -13,7 +13,7 @@ function isNumber(item) {
  *   next:String       the next number to be operated on with the total
  *   operation:String  +, -, etc.
  */
-export default function calculate(obj, buttonName) {
+export default async function calculate(obj, buttonName) {
   if (buttonName === 'AC') {
     return {
       total: null,
@@ -67,8 +67,10 @@ export default function calculate(obj, buttonName) {
 
   if (buttonName === '=') {
     if (obj.next && obj.operation) {
+      let result = await operate(obj.total, obj.next, obj.operation);
+      console.log(`= ${result}`)
       return {
-        total: operate(obj.total, obj.next, obj.operation),
+        total: result,
         next: null,
         operation: null,
       };
@@ -93,7 +95,7 @@ export default function calculate(obj, buttonName) {
     }
 
     return {
-      total: operate(obj.total, obj.next, obj.operation),
+      total: await operate(obj.total, obj.next, obj.operation),
       next: null,
       operation: buttonName,
     };
