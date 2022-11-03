@@ -25,7 +25,7 @@ variable "GCP_ZONE" {
 }
 
 variable "OPERATIONS_ZONE" {
-    default = "europe-west3-b"
+    default = "europe-west1-b"
 }
 
 # Minimum required

@@ -15,6 +15,11 @@
         state: directory
         mode: 0755
 
+    - name: Install pip3
+      apt:
+        name: python3-pip
+        update_cache: yes
+
     - name: Copy project code
       copy: 
         src: /home/vagrant/project/adder/
@@ -31,16 +36,11 @@
         dest: /home/ubuntu/src/database_ips
         mode: 0644
 
-    - name: Install pip3
-      apt:
-        name: python3-pip
-        update_cache: yes
-
     - name: Install dependencies
       ansible.builtin.pip: 
         chdir: /home/ubuntu/src
         requirements: requirements.txt
-      notify: restart adder
+      notify: Restart adder
 
     - name: Run service
       systemd:
@@ -48,10 +48,9 @@
         daemon-reload: yes
         enabled: yes
         state: started
-        masked: no
 
   handlers:
-    - name: restart adder
+    - name: Restart adder
       systemd:
         name: adder
         state: restarted

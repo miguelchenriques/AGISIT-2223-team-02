@@ -1,12 +1,5 @@
 ---
-# file: ansible-gcp-servers-setup-all.yml
-# configures the server instances
-# This Playbook has Three Plays: one for critical configurations in all servers
-# A second one for installing software in web servers
-# a third one to install software in the Load Balancer server
-
-# This First Play Sets up critical configuration on servers
-- hosts: targets
+- hosts: all
   # as the systems are not yet "known" by Ansible Facts cannot be gathered yet
   gather_facts: no
   remote_user: ubuntu
@@ -35,40 +28,249 @@
         key: "{{ lookup('file', '/home/vagrant/.ssh/id_rsa.pub') }}"
         state: present
 
-# This Second Play installs the required software in web servers
-# tasks names are self explanatory
-- hosts: operations
-  gather_facts: True
+# Setup mongo replicas
+- hosts: databases
+  gather_facts: yes
   remote_user: ubuntu
   become: yes
   become_method: sudo
 
   tasks:
-    - name: Add NGINX Repository
-      apt_repository:
-        repo: ppa:nginx/stable
-        state: present
+  - name: Add mongo key
+    apt_key: 
+      url: https://www.mongodb.org/static/pgp/server-6.0.asc
+      state: present
 
-    - name: install nginx
-      apt:
-        pkg: nginx
-        state: present
+  - name: Add mongo repo
+    apt_repository:
+      repo: "deb https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse"
+      state: present
+      update_cache: yes
 
-    - name: deploy website content
-      template:
-        src: /home/vagrant/labs/gcpcloud/templates/index.html.j2
-        dest: /var/www/html/index.html
+  - name: Upgrade packages
+    apt:
+      update_cache: yes
+      upgrade: yes
 
+  - name: Install mongo
+    apt:
+      name: mongodb-org
+      update_cache: yes
 
-  # The handler is common to the nginx installation steps
+  - name: Run mongod
+    systemd:
+      name: mongod
+      daemon-reload: yes
+      enabled: yes
+      state: started
+
+  - name: Copy config file
+    copy:
+      src: /home/vagrant/project/gcpcloud/templates/mongod.conf
+      dest: /etc/mongod.conf
+    notify: restart mongo
+
   handlers:
-    - name: restart nginx
-      service:
-        name: nginx
+    - name: restart mongo
+      systemd:
+        name: mongod
         state: restarted
 
+- hosts: database1
+  remote_user: ubuntu
+  become: yes
+  gather_facts: yes
+  become_method: sudo
+
+  tasks:
+  - name: Set primary from replica
+    command: mongosh --eval 'rs.initiate({_id :"rs0",members:[{ _id:0,host:"{{hostvars['database1']['ansible_default_ipv4']['address']}}:27017"},{_id:1,host:"{{hostvars['database2']['ansible_default_ipv4']['address']}}:27017"},{_id:2,host:"{{ hostvars['database3']['ansible_default_ipv4']['address']}}:27017"}]})'
+    async: 1000
+    poll: 0
+
+
+# Setup addition and subtraction microservices
+- hosts: adder
+  gather_facts: true
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+  
+  tasks:
+    - name: Create src folder
+      file:
+        path: /home/ubuntu/src
+        state: directory
+        mode: 0755
+
+    - name: Install pip3
+      apt:
+        name: python3-pip
+        update_cache: yes
+
+    - name: Copy project code
+      copy: 
+        src: /home/vagrant/project/adder/
+        dest: /home/ubuntu/src/
+
+    - name: Copy service unit file
+      copy: 
+        src: /home/vagrant/project/adder/adder.service
+        dest: /etc/systemd/system/adder.service
+
+    - name: Add database ips file
+      template:
+        src: /home/vagrant/project/gcpcloud/templates/database_ips.j2
+        dest: /home/ubuntu/src/database_ips
+        mode: 0644
+
+    - name: Install dependencies
+      ansible.builtin.pip: 
+        chdir: /home/ubuntu/src
+        requirements: requirements.txt
+      notify: Restart adder
+
+    - name: Run service
+      systemd:
+        name: adder
+        daemon-reload: yes
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: Restart adder
+      systemd:
+        name: adder
+        state: restarted
+
+#Setup multiplication microservices and frontend servers
+- hosts: nodeServices
+  gather_facts: true
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+  vars:
+    NODEJS_VERSION: "16"
+    ansible_distribution_release: "focal" 
+  tasks:
+    - name: Install the gpg key for nodejs LTS
+      apt_key:
+        url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+        state: present
+
+    - name: Install the nodejs LTS repos
+      apt_repository:
+        repo: "deb https://deb.nodesource.com/node_{{ NODEJS_VERSION }}.x {{ ansible_distribution_release }} main"
+        state: present
+        update_cache: yes
+
+    - name: Upgrade packages
+      apt:
+        update_cache: yes
+        upgrade: yes 
+
+    - name: Install nodejs
+      apt:
+        name: nodejs
+
+
+- hosts: mult
+  gather_facts: true
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+  
+  tasks:
+    - name: Create src folder
+      file:
+        path: /home/ubuntu/src
+        state: directory
+        mode: 0755
+
+    - name: Copy project code
+      copy: 
+        src: '{{item}}'
+        dest: /home/ubuntu/src/
+      loop:
+        - /home/vagrant/project/multiplier/bin
+        - /home/vagrant/project/multiplier/routes
+        - /home/vagrant/project/multiplier/app.js
+        - /home/vagrant/project/multiplier/package.json
+
+    - name: Add database ips file
+      template:
+        src: /home/vagrant/project/gcpcloud/templates/database_ips.j2
+        dest: /home/ubuntu/src/database_ips
+        mode: 0644
+
+    - name: install app and dependencies
+      npm:
+        path: /home/ubuntu/src
+
+    - name: Start the application
+      command:
+        chdir: /home/ubuntu/src/
+        cmd: sudo npm start
+      async: 1000
+      poll: 0
+
+    - name: Ensure app is running
+      shell: ps aux | grep node
+      register: app_status
+
+    - debug: msg={{app_status.stdout_lines}}-
+
+- hosts: frontend
+  gather_facts: true
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+  
+  tasks:
+    - name: Create src folder
+      file:
+        path: /home/ubuntu/src
+        state: directory
+        mode: 0755
+
+    - name: Copy project code
+      copy: 
+        src: '{{item}}'
+        dest: /home/ubuntu/src/
+      loop:
+        - /home/vagrant/project/frontend/public
+        - /home/vagrant/project/frontend/src
+        - /home/vagrant/project/frontend/package.json
+
+    - name: Add balancer Ips
+      template:
+        src: /home/vagrant/project/gcpcloud/templates/microservices_balancers.json.j2
+        dest: /home/ubuntu/src/microservices_balancers.json
+        mode: 0644
+
+    - name: install app and dependencies
+      npm:
+        path: /home/ubuntu/src
+
+    - name: Start the application
+      command:
+        chdir: /home/ubuntu/src/
+        cmd: sudo npm start
+      async: 1000
+      poll: 0
+
+    - name: Ensure app is running
+      shell: ps aux | grep node
+      register: app_status
+
+    - debug: msg={{app_status.stdout_lines}}-
+
+# Setup load balancers
+- hosts: servers
+  gather_facts: yes
+
 # This Third Play install the required software in the Load Balancer
-- hosts: loadbal
+- hosts: bal
   gather_facts: true
   remote_user: ubuntu
   become: yes
@@ -91,7 +293,7 @@
         line: "{{ hostvars[item]['ansible_default_ipv4']['address'] }} {{item}}"
         state: present
       when: hostvars[item]['ansible_default_ipv4']['address'] is defined
-      with_items: '{{groups.web}}'
+      with_items: '{{groups.servers}}'
 
     - name: add HAPROXY Repository
       apt_repository:
@@ -110,21 +312,6 @@
         line: "ENABLED=1"
         state: present
 
-
-    - name: deploy haproxy config
-      template:
-        src: /home/vagrant/labs/gcpcloud/templates/haproxy.cfg.j2
-        dest: /etc/haproxy/haproxy.cfg
-        mode: 0644
-        validate: haproxy -f %s -c -q
-      notify: restart haproxy
-
-    - name: Ensure HAProxy is started and enabled on boot.
-      service:
-        name: haproxy
-        state: started
-        enabled: yes
-
 # The handler is common to the nginx installation steps
   handlers:
 
@@ -132,3 +319,78 @@
     service:
       name: haproxy
       state: restarted
+
+- hosts: balancer1
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: deploy haproxy config
+    template:
+      src: /home/vagrant/project/gcpcloud/templates/haproxy_front.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+      mode: 0644
+      validate: haproxy -f %s -c -q
+    notify: restart haproxy
+
+  handlers:
+
+  - name: restart haproxy
+    service:
+      name: haproxy
+      state: restarted
+
+- hosts: balancer2
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: deploy haproxy config
+    template:
+      src: /home/vagrant/project/gcpcloud/templates/haproxy_adder.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+      mode: 0644
+      validate: haproxy -f %s -c -q
+    notify: restart haproxy
+
+  handlers:
+
+  - name: restart haproxy
+    service:
+      name: haproxy
+      state: restarted
+
+- hosts: balancer3
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: deploy haproxy config
+    template:
+      src: /home/vagrant/project/gcpcloud/templates/haproxy_multiplier.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+      mode: 0644
+      validate: haproxy -f %s -c -q
+    notify: restart haproxy
+
+  handlers:
+
+  - name: restart haproxy
+    service:
+      name: haproxy
+      state: restarted
+
+- hosts: bal
+  remote_user: ubuntu
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: Ensure HAProxy is started and enabled on boot.
+    service:
+      name: haproxy
+      state: started
+      enabled: yes

@@ -23,7 +23,8 @@ def add_document(a: int, b: int, operator: str, result: int):
     history.insert_one(document)
 
 def get_documents():
-    return history.find({}, {'_id': 0})
+    results = history.find({}, {'_id': 0})
+    return [result for result in results]
 
 @app.get('/health')
 async def health_check():
@@ -42,5 +43,5 @@ async def subtraction(a: int, b: int) -> int:
     return result
 
 @app.get('/history')
-async def history():
+async def get_history():
     return get_documents()

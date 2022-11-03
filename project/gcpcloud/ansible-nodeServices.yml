@@ -5,39 +5,37 @@
 # A second one for installing software in web servers
 # a third one to install software in the Load Balancer server
 
+- hosts: databases
+  gather_facts: yes
+
 - hosts: nodeServices
   gather_facts: true
   remote_user: ubuntu
   become: yes
   become_method: sudo
-  # vars:
-  #   NODEJS_VERSION: "16"
-  #   ansible_distribution_release: "focal" 
+  vars:
+    NODEJS_VERSION: "16"
+    ansible_distribution_release: "focal" 
   tasks:
-  #   - name: Install the gpg key for nodejs LTS
-  #     apt_key:
-  #       url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
-  #       state: present
+    - name: Install the gpg key for nodejs LTS
+      apt_key:
+        url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+        state: present
 
-  #   - name: Install the nodejs LTS repos
-  #     apt_repository:
-  #       repo: "deb https://deb.nodesource.com/node_{{ NODEJS_VERSION }}.x {{ ansible_distribution_release }} main"
-  #       state: present
-  #       update_cache: yes
+    - name: Install the nodejs LTS repos
+      apt_repository:
+        repo: "deb https://deb.nodesource.com/node_{{ NODEJS_VERSION }}.x {{ ansible_distribution_release }} main"
+        state: present
+        update_cache: yes
 
-  #   - name: Install the nodejs
-  #     apt:
-  #       name: nodejs
-  #       state: present
-
-    - name: upgrade
+    - name: Upgrade packages
       apt:
-        upgrade: yes
+        update_cache: yes
+        upgrade: yes 
 
-    - name: Install nodejs 
+    - name: Install nodejs
       apt:
-        pkg:
-          - nodejs
+        name: nodejs
 
 
 - hosts: mult
@@ -62,6 +60,12 @@
         - /home/vagrant/project/multiplier/routes
         - /home/vagrant/project/multiplier/app.js
         - /home/vagrant/project/multiplier/package.json
+
+    - name: Add database ips file
+      template:
+        src: /home/vagrant/project/gcpcloud/templates/database_ips.j2
+        dest: /home/ubuntu/src/database_ips
+        mode: 0644
 
     - name: install app and dependencies
       npm:
@@ -101,6 +105,12 @@
         - /home/vagrant/project/frontend/public
         - /home/vagrant/project/frontend/src
         - /home/vagrant/project/frontend/package.json
+
+    - name: Add balancer Ips
+      template:
+        src: /home/vagrant/project/gcpcloud/templates/microservices_balancers.json.j2
+        dest: /home/ubuntu/src/microservices_balancers.json
+        mode: 0644
 
     - name: install app and dependencies
       npm:

@@ -1,7 +1,16 @@
 const express = require('express');
 const router = express.Router();
 var MongoClient = require('mongodb').MongoClient;
-var url = "mongodb://localhost:27017/";
+const fs = require("fs")
+
+function getConnectionString() {
+    const data = fs.readFileSync('database_ips', 'utf8')
+    const ips = data.split('\n').filter((ip) => ip !== "").map(ip => ip.trim())
+    return `mongodb://${ips.join(",")}/?replicaSet=rs0`
+}
+
+var url = getConnectionString();
+console.log(url)
 
 router.get('/health', (req, res) => {
     res.end();
@@ -23,7 +32,7 @@ function insertInDB(num1, num2, operation, result) {
     MongoClient.connect(url, function(err, db) {
     if (err) throw err;
     var dbo = db.db("calculator");
-    if (!db.getCollection('history').exists()) db.createCollection("history")
+    if (!dbo.collection('history')) dbo.createCollection("history")
     var myobj = { num1, num2, operation, result };
     dbo.collection("history").insertOne(myobj, function(err, res) {
         if (err) throw err;
