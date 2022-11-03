@@ -1,10 +1,13 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import balancers from '../../microservices_balancers.json'
 
 const List = () => {
 
     const [list, setListValues] = useState([]);
+
+    console.log(list)
 
     const refs = list.reduce((acc, value) => {
         acc[value.id] = React.createRef();
@@ -12,12 +15,14 @@ const List = () => {
     }, {});
 
     const handleClick  = () => {
-        axios.get('https://ip:port/history').then(response => setListValues(response.data.list));
+        axios.get(`http://${balancers.adder}:80/history`).then(response => setListValues(response.data));
 
         console.log(list)
     }
 
-    handleClick();
+    useEffect(() => {
+        handleClick();
+    }, []);
 
     return (
         <div className='list-wrapper'>

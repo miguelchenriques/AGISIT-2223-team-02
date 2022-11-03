@@ -245,7 +245,7 @@
     - name: Add balancer Ips
       template:
         src: /home/vagrant/project/gcpcloud/templates/microservices_balancers.json.j2
-        dest: /home/ubuntu/src/microservices_balancers.json
+        dest: /home/ubuntu/src/src/microservices_balancers.json
         mode: 0644
 
     - name: install app and dependencies

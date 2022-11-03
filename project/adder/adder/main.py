@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import pymongo
+from fastapi.middleware.cors import CORSMiddleware
 
 def get_connection_string():
     con_string = "mongodb://{}/?replicaSet=rs0"
@@ -12,6 +13,14 @@ client = pymongo.MongoClient(get_connection_string())
 history = client.calculator.history
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def add_document(a: int, b: int, operator: str, result: int):
     document = {
