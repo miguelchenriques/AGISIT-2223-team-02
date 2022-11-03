@@ -1,26 +1,32 @@
 import Big from 'big.js';
+import axios from 'axios';
 
 export default function operate(numberOne, numberTwo, operation) {
   const one = Big(numberOne);
   const two = Big(numberTwo);
+  let result = ''
   if (operation === '+') {
-    //call adder
-    return one.plus(two).toString();
+    axios.get('http://ip:port/sum?a='+one+"&b="+two)
+        .then(response => result = response.data);
+    return result.toString();
   }
   if (operation === '-') {
-    //call adder
-    return one.minus(two).toString();
+    axios.get('http://ip:port/subtraction?a='+one+"&b="+two)
+        .then(response => result = response.data);
+    return result.toString();
   }
   if (operation === 'x') {
-    //call multiplier
-    return one.times(two).toString();
+    axios.get('http://ip:port/multiplier?num1='+one+"&num2="+two)
+        .then(response => result = response.data);
+    return result.toString();
   }
   if (operation === '÷') {
     try {
-      //call multiplier
-      return one.div(two).toString();
+      axios.get('http://ip:port/divisor?num1='+one+"&num2="+two)
+        .then(response => result = response.data);
+      return result.toString();
     } catch (err) {
-      return "Can't divide by 0.";
+      return "Error";
     }
   }
   throw Error(`Unknown operation '${operation}'`);

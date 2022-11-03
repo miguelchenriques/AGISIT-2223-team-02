@@ -1,0 +1,10 @@
+[Unit]
+Description=Service which runs Prometheus
+
+[Service]
+User=ubuntu
+ExecStart=/usr/bin/prometheus --config.file=/home/ubuntu/prometheus/prometheus.yml --storage.tsdb.path=/var/lib/prometheus 
+
+ 
+[Install]
+WantedBy=multi-user.target

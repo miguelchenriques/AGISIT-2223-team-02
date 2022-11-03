@@ -3,6 +3,7 @@ import DisplayScreen from './Screen';
 import NumericKeys from './Numbers';
 import OperatorKeys from './Operators';
 import calculate from './logic/calculate';
+import List from './history/History';
 
 const Calculator = () => {
   const [state, setState] = useState({
@@ -20,10 +21,15 @@ const Calculator = () => {
   const { obj } = state;
   const { total, next, operation } = obj;
   return (
-    <div className="calc-container">
-      <DisplayScreen next={next} total={total} operation={operation} />
-      <OperatorKeys handleClick={handleClick} />
-      <NumericKeys handleClick={handleClick} />
+    <div className='wrapper'>
+      <div className="calc-container">
+        <DisplayScreen next={next} total={total} operation={operation} />
+        <OperatorKeys handleClick={handleClick} />
+        <NumericKeys handleClick={handleClick} />
+      </div>
+      <div>
+        <List />
+      </div>
     </div>
   );
 };
