@@ -41,13 +41,13 @@ async def health_check():
 
 @app.get('/sum')
 async def sum(a: float, b: float) -> float:
-    result = a + b
+    result = round(a + b, 2)
     add_document(a, b, "+", result)
     return result
 
 @app.get('/sub')
 async def subtraction(a: float, b: float) -> float:
-    result = a - b
+    result = round(a - b, 2)
     add_document(a, b, "-", result)
     return result
 

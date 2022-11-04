@@ -17,13 +17,13 @@ router.get('/health', (req, res) => {
 })
   
 router.get('/multiplier', (req, res) => {
-    const result = parseInt(req.query.num1) * parseInt(req.query.num2);
+    const result = (parseFloat(req.query.num1) * parseFloat(req.query.num2)).toFixed(2);
     insertInDB(num1=req.query.num1, num2=req.query.num2, operation='*', result);
     res.json({ result });
 })
   
 router.get('/divisor', (req, res) => {
-    const result = parseInt(req.query.num1) / parseInt(req.query.num2);
+    const result = (parseFloat(req.query.num1) / parseFloat(req.query.num2)).toFixed(2);
     insertInDB(num1=req.query.num1, num2=req.query.num2, operation='/', result);
     res.json({ result });
 })
