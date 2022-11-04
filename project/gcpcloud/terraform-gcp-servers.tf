@@ -7,8 +7,7 @@
 ###########  Frontend Servers   #############
 # This method creates as many identical instances as the "count" index value
 resource "google_compute_instance" "frontend" {
-    # count = 2
-    count = 1
+    count = 2
     name = "frontend${count.index+1}"
     machine_type = var.GCP_MACHINE_TYPE
     zone = var.GCP_ZONE

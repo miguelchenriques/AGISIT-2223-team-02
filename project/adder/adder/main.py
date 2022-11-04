@@ -22,7 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def add_document(a: int, b: int, operator: str, result: int):
+def add_document(a: float, b: float, operator: str, result: float):
     document = {
         "num1": a,
         "num2": b,
@@ -40,13 +40,13 @@ async def health_check():
     return {"status": "OK"}
 
 @app.get('/sum')
-async def sum(a: int, b: int) -> int:
+async def sum(a: float, b: float) -> float:
     result = a + b
     add_document(a, b, "+", result)
     return result
 
 @app.get('/sub')
-async def subtraction(a: int, b: int) -> int:
+async def subtraction(a: float, b: float) -> float:
     result = a - b
     add_document(a, b, "-", result)
     return result
