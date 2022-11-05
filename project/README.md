@@ -3,9 +3,9 @@
 ### Authors
 Group 02
 Members:
-102148 - Miguel Henriques
-102150 - Bernardo Várzea
-102152 - Filipe Barroso
+- 102148 - Miguel Henriques
+- 102150 - Bernardo Várzea
+- 102152 - Filipe Barroso
 
 ***
 
@@ -66,6 +66,8 @@ The Architecture of our base solution consist of the following main services:
 - Monitoring Server: provides insight over the system resources.
 - HaProxy load balancers: provide load balancing between each of the microservices and frontend web servers.
 
+![architecture](images/architecture.png)
+![deploys](images/deploys.png)
 
 ### Implementation options
 
